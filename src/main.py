@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from alchimia import TWISTED_STRATEGY
 
 from sqlalchemy import (
@@ -6,53 +8,58 @@ from sqlalchemy import (
 from sqlalchemy.schema import CreateTable
 
 from twisted.internet import reactor, defer
-#from twisted.internet.task import react
+from twisted.internet.task import react
 
 
-def buildEngine(reactor):
-    return create_engine(
+Engine = create_engine(
         "sqlite://", reactor=reactor, strategy=TWISTED_STRATEGY
-    )
+)
+Metadata = MetaData(Engine)
+Users = Table("users", Metadata,
+            Column("id", Integer(), primary_key=True),
+            Column("name", String()),
+        )
 
 
 def setupDb(_engine):
-    metadata = MetaData()
-    users = Table("users", metadata,
-        Column("id", Integer(), primary_key=True),
-        Column("name", String()),
+    d = _engine.execute(CreateTable(Users))
+    def exists(ignored):
+        print("exists?")
+    d.addCallback(exists)
+    return d
+
+def addUsers(result, _engine):
+    newUsers = [
+        dict(name="Jeremy Goodwin"),
+        dict(name="Natalie Hurley"),
+        dict(name="Dan Rydell"),
+        dict(name="Casey McCall"),
+        dict(name="Dana Whitaker")
+    ]
+    return _engine.execute(Users.insert().values(newUsers))
+
+def getDUsers(_result, _engine):
+    d = _engine.execute(
+        Users.select(Users.c.name.startswith("D"))
     )
-    return _engine.execute(CreateTable(users))
-
-
-def addUsers(_engine):
-    ds = defer.DeferredList([
-        _engine.execute(users.insert().values(name="Jeremy Goodwin")),
-        _engine.execute(users.insert().values(name="Natalie Hurley")),
-        _engine.execute(users.insert().values(name="Dan Rydell")),
-        _engine.execute(users.insert().values(name="Casey McCall")),
-        _engine.execute(users.insert().values(name="Dana Whitaker"))
-    ], consumeErrors=False)
-    return ds
-
-def getDUsers(_engine):
-    deferredResult = engine.execute(users.select(users.c.name.startswith("D")))
     def realize(results):
         return results.fetchall()
-    deferredResult.addCallback(realize)
+    d.addCallback(realize)
+    return d
 
 def printResults(users):
-    # Print out the users
-    for user in d_users:
-        print "Username: %s" % user[users.c.name]
+    for user in users:
+        print("Username: %s" % user[Users.c.name])
 
 def main(reactor):
-    engine = buildEngine(reactor=reactor)
-    d = setupDb(engine)
-    d.addCallback(addUsers, engine)
-    d.addCallback(getDUsers, engine)
+    d = setupDb(Engine)
+    d.addCallback(addUsers, _engine=Engine)
+    d.addCallback(getDUsers, _engine=Engine)
     d.addCallback(printResults)
+    return d
+
 
 if __name__ == "__main__":
-    main(reactor)
-    reactor.run()
-    #react(main, [])
+    #main(reactor)
+    #reactor.run()
+    react(main, [])
