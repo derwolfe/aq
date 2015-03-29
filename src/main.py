@@ -48,14 +48,17 @@ def getUsersStartingWith(_result, _engine, queryLetter):
 
 
 def printResults(users):
-    for user in users:
-        print("Username: %s" % user[Users.c.name])
+    if users:
+        for user in users:
+            print("Username: %s" % user[Users.c.name])
+    else:
+        print("Nobody home")
 
 
 def main(reactor):
     d = setupDb(Engine)
     d.addCallback(addUsers, _engine=Engine)
-    d.addCallback(getUsersStartingWith, _engine=Engine, queryLetter="J")
+    d.addCallback(getUsersStartingWith, _engine=Engine, queryLetter="j")
     d.addCallback(printResults)
     return d
 
