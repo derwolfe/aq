@@ -13,8 +13,6 @@ from twisted.internet.task import react
 from twisted.python.filepath import FilePath
 
 
-#PROJECT_PATH = FilePath(__file__).dirname()
-#print(PROJECT_PATH)
 Engine = create_engine(
         "sqlite://", reactor=reactor, strategy=TWISTED_STRATEGY
 )
