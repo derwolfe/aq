@@ -14,22 +14,25 @@ from twisted.python.filepath import FilePath
 from twisted.protocols import basic
 
 # db setup, how to make this readonly?
-Engine = create_engine(
-    "sqlite://", reactor=reactor, strategy=TWISTED_STRATEGY
-)
-Metadata = MetaData(Engine)
-Users = Table("users",
-              Metadata,
-              Column("id", Integer(), primary_key=True),
-              Column("name", String())
-        )
+
 
 
 class Database(object):
 
+    def __init__(self, reactor):
+        self.engine = create_engine(
+            "sqlite://", reactor=reactor, strategy=TWISTED_STRATEGY
+        )
+
+        self.users = Table("users",
+                           MetaData(reactor),
+                           Column("id", Integer(), primary_key=True),
+                           Column("name", String())
+                       )
+
 
     def setupDb(self):
-        d = Engine.execute(CreateTable(Users))
+        d = self.engine.execute(CreateTable(self.users))
         def addUsers(_ignored):
             newUsers = [
                 dict(name="Jeremy Goodwin"),
@@ -38,18 +41,23 @@ class Database(object):
                 dict(name="Casey McCall"),
                 dict(name="Dana Whitaker")
             ]
-            return Engine.execute(Users.insert().values(newUsers))
+            return self.engine.execute(self.users.insert().values(newUsers))
         d.addCallback(addUsers)
         return d
 
     def getUsersStartingWith(self, queryLetter):
-        d = Engine.execute(
-            Users.select(Users.c.name.startswith(queryLetter))
+        d = self.engine.execute(
+            self.users.select(self.users.c.name.startswith(queryLetter))
         )
         def realize(results):
             return results.fetchall()
         d.addCallback(realize)
         return d
+
+    def addPerson(self, name):
+        return self.engine.execute(
+            self.users.insert().values(name)
+        )
 
 
 class SearchCommandProtocol(basic.LineReceiver, object):
@@ -57,8 +65,8 @@ class SearchCommandProtocol(basic.LineReceiver, object):
     delimiter = '\n' # unix terminal style newlines. remove this line
                      # for use with Telnet
 
-    def __init__(self, Db):
-        self.database = Db
+    def __init__(self, database):
+        self.database = database
 
     def connectionMade(self):
         self.sendLine("DB query system. Type 'help' for help.")
@@ -109,12 +117,20 @@ class SearchCommandProtocol(basic.LineReceiver, object):
             self._checkSuccess).addErrback(
             self._checkFailure)
 
+    def do_add(self, first, last):
+        """
+        add <firstname> <lastname>: Add a new name to the system
+        """
+        completeName = "%s %s" %(first, last)
+        self.database.addPerson(completeName).addCallback(
+            self.do_find(completeName))
+
     def _checkSuccess(self, results):
         if not results:
             self.sendLine("No results")
         else:
             self._sendSeperator()
-            column = Users.c.name
+            column = self.database.users.c.name
             for result in results:
                 self.sendLine("%s" %(result[column].encode('utf-8'),))
             self._sendSeperator()
@@ -131,7 +147,7 @@ class SearchCommandProtocol(basic.LineReceiver, object):
 
 
 if __name__ == "__main__":
-    database = Database()
+    database = Database(reactor)
     database.setupDb()
-    stdio.StandardIO(SearchCommandProtocol(Db=database))
+    stdio.StandardIO(SearchCommandProtocol(database=database))
     reactor.run()
