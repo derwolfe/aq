@@ -13,22 +13,23 @@ from twisted.internet.task import react
 from twisted.python.filepath import FilePath
 from twisted.protocols import basic
 
+# db setup, how to make this readonly?
+Engine = create_engine(
+    "sqlite://", reactor=reactor, strategy=TWISTED_STRATEGY
+)
+Metadata = MetaData(Engine)
+Users = Table("users",
+              Metadata,
+              Column("id", Integer(), primary_key=True),
+              Column("name", String())
+        )
+
 
 class Database(object):
 
-    def __init__(self, reactor):
-        self.engine = create_engine(
-            "sqlite://", reactor=reactor, strategy=TWISTED_STRATEGY
-        )
-        self.metadata = MetaData(self.engine)
-        self.users = Table("users",
-                           self.metadata,
-                           Column("id", Integer(), primary_key=True),
-                           Column("name", String())
-                       )
 
     def setupDb(self):
-        d = self.engine.execute(CreateTable(self.users))
+        d = Engine.execute(CreateTable(Users))
         def addUsers(_ignored):
             newUsers = [
                 dict(name="Jeremy Goodwin"),
@@ -37,13 +38,13 @@ class Database(object):
                 dict(name="Casey McCall"),
                 dict(name="Dana Whitaker")
             ]
-            return self.engine.execute(self.users.insert().values(newUsers))
+            return Engine.execute(Users.insert().values(newUsers))
         d.addCallback(addUsers)
         return d
 
     def getUsersStartingWith(self, queryLetter):
-        d = self.engine.execute(
-            self.users.select(self.users.c.name.startswith(queryLetter))
+        d = Engine.execute(
+            Users.select(Users.c.name.startswith(queryLetter))
         )
         def realize(results):
             return results.fetchall()
@@ -57,8 +58,7 @@ class SearchCommandProtocol(basic.LineReceiver, object):
                      # for use with Telnet
 
     def __init__(self, Db):
-        self.Db = Db
-        #super(basic.LineReceiver, self).__init__()
+        self.database = Db
 
     def connectionMade(self):
         self.sendLine("DB query system. Type 'help' for help.")
@@ -103,9 +103,9 @@ class SearchCommandProtocol(basic.LineReceiver, object):
 
     def do_find(self, startsWith):
         """
-        Find <letter>: Find all of the names starting with the given letter
+        find <letter>: Find all of the names starting with the given letter
         """
-        self.Db.getUsersStartingWith(startsWith).addCallback(
+        self.database.getUsersStartingWith(startsWith).addCallback(
             self._checkSuccess).addErrback(
             self._checkFailure)
 
@@ -114,7 +114,7 @@ class SearchCommandProtocol(basic.LineReceiver, object):
             self.sendLine("No results")
         else:
             self._sendSeperator()
-            column = self.Db.users.c.name
+            column = Users.c.name
             for result in results:
                 self.sendLine("%s" %(result[column].encode('utf-8'),))
             self._sendSeperator()
@@ -131,7 +131,7 @@ class SearchCommandProtocol(basic.LineReceiver, object):
 
 
 if __name__ == "__main__":
-    database = Database(reactor)
+    database = Database()
     database.setupDb()
     stdio.StandardIO(SearchCommandProtocol(Db=database))
     reactor.run()
