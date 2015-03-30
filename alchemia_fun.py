@@ -1,4 +1,4 @@
-from __future__ import print_function
+from __future__ import print_function, absolute_import, division
 
 from alchimia import TWISTED_STRATEGY
 
@@ -149,6 +149,6 @@ class SearchCommandProtocol(basic.LineReceiver, object):
 
 if __name__ == "__main__":
     database = Database()
-    database.setup()
-    stdio.StandardIO(SearchCommandProtocol(database=database))
+    database.setup().addCallback(
+        lambda _: stdio.StandardIO(SearchCommandProtocol(database=database)))
     reactor.run()
