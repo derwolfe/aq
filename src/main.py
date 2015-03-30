@@ -114,11 +114,12 @@ class SearchCommandProtocol(basic.LineReceiver, object):
             self._checkSuccess).addErrback(
             self._checkFailure)
 
-    def do_add(self, name):
+    def do_add(self, first, last):
         """
         add <name>: Add a new name to the system
         """
-        self.database.addPerson(name).addCallback(
+        name = "%s %s" %(first, last)
+        self.database.addPerson(name.title()).addCallback(
             lambda _: self.do_find(name))
 
 
