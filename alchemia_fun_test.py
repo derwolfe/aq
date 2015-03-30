@@ -21,7 +21,7 @@ class TestDatabase(unittest.TestCase):
         """
         d = self.db.setup()
         def check(_):
-            result = engine.has_table(connectionString, 'users')
+            result = engine.has_table('users')
             self.assertTrue(result)
         d.addCallback(check)
         return d
@@ -31,4 +31,5 @@ class TestDatabase(unittest.TestCase):
         """
         Users are added to the database.
         """
-        pass
+
+        self.fail()
