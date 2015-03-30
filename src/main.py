@@ -18,9 +18,8 @@ connectionString = 'sqlite://'
 engine = create_engine(
     connectionString, reactor=reactor, strategy=TWISTED_STRATEGY
 )
-
-users = Table("users",
-              MetaData(),
+metadata = MetaData()
+users = Table("users", metadata,
               Column("id", Integer(), primary_key=True),
               Column("name", String())
 )
@@ -130,7 +129,11 @@ class SearchCommandProtocol(basic.LineReceiver, object):
             self._sendSeperator()
             column = users.c.name
             for result in results:
-                self.sendLine("%s" %(result[column].encode('utf-8'),))
+                formatted = "%d - %s" %(
+                    result['id'],
+                    result['name'].encode('utf-8')
+                )
+                self.sendLine(formatted)
             self._sendSeperator()
 
     def _sendSeperator(self, bufferText="-"*10):
