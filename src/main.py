@@ -14,25 +14,22 @@ from twisted.python.filepath import FilePath
 from twisted.protocols import basic
 
 # db setup, how to make this readonly?
+connectionString = 'sqlite://'
+engine = create_engine(
+    connectionString, reactor=reactor, strategy=TWISTED_STRATEGY
+)
 
+users = Table("users",
+              MetaData(),
+              Column("id", Integer(), primary_key=True),
+              Column("name", String())
+)
 
 
 class Database(object):
 
-    def __init__(self, reactor):
-        self.engine = create_engine(
-            "sqlite://", reactor=reactor, strategy=TWISTED_STRATEGY
-        )
-
-        self.users = Table("users",
-                           MetaData(reactor),
-                           Column("id", Integer(), primary_key=True),
-                           Column("name", String())
-                       )
-
-
-    def setupDb(self):
-        d = self.engine.execute(CreateTable(self.users))
+    def setup(self):
+        d = engine.execute(CreateTable(users))
         def addUsers(_ignored):
             newUsers = [
                 dict(name="Jeremy Goodwin"),
@@ -41,13 +38,13 @@ class Database(object):
                 dict(name="Casey McCall"),
                 dict(name="Dana Whitaker")
             ]
-            return self.engine.execute(self.users.insert().values(newUsers))
+            return engine.execute(users.insert().values(newUsers))
         d.addCallback(addUsers)
         return d
 
     def getUsersStartingWith(self, queryLetter):
-        d = self.engine.execute(
-            self.users.select(self.users.c.name.startswith(queryLetter))
+        d = engine.execute(
+            users.select(users.c.name.startswith(queryLetter))
         )
         def realize(results):
             return results.fetchall()
@@ -55,8 +52,8 @@ class Database(object):
         return d
 
     def addPerson(self, name):
-        return self.engine.execute(
-            self.users.insert().values(name)
+        return engine.execute(
+            users.insert().values(dict(name=name))
         )
 
 
@@ -117,25 +114,25 @@ class SearchCommandProtocol(basic.LineReceiver, object):
             self._checkSuccess).addErrback(
             self._checkFailure)
 
-    def do_add(self, first, last):
+    def do_add(self, name):
         """
-        add <firstname> <lastname>: Add a new name to the system
+        add <name>: Add a new name to the system
         """
-        completeName = "%s %s" %(first, last)
-        self.database.addPerson(completeName).addCallback(
-            self.do_find(completeName))
+        self.database.addPerson(name).addCallback(
+            lambda _: self.do_find(name))
+
 
     def _checkSuccess(self, results):
         if not results:
             self.sendLine("No results")
         else:
             self._sendSeperator()
-            column = self.database.users.c.name
+            column = users.c.name
             for result in results:
                 self.sendLine("%s" %(result[column].encode('utf-8'),))
             self._sendSeperator()
 
-    def _sendSeperator(self, bufferText = "-"*10):
+    def _sendSeperator(self, bufferText="-"*10):
         self.sendLine(bufferText)
 
     def _checkFailure(self, failure):
@@ -147,7 +144,7 @@ class SearchCommandProtocol(basic.LineReceiver, object):
 
 
 if __name__ == "__main__":
-    database = Database(reactor)
-    database.setupDb()
+    database = Database()
+    database.setup()
     stdio.StandardIO(SearchCommandProtocol(database=database))
     reactor.run()
