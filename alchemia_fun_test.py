@@ -10,16 +10,19 @@ from alchemia_fun import (
     users
 )
 
+
 class TestDatabase(unittest.TestCase):
 
     def setUp(self):
         self.db = Database()
+
 
     def test_setupCreatesUsersTable(self):
         """
         setup creates a table named 'users'
         """
         d = self.db.setup()
+
         def check(_):
             result = engine.has_table('users')
             self.assertTrue(result)
@@ -31,5 +34,13 @@ class TestDatabase(unittest.TestCase):
         """
         Users are added to the database.
         """
+        d = self.db.setup()
 
-        self.fail()
+        def check(_):
+            dCount = engine.execute(users.count())
+            dCount.addCallback(lambda x: x.fetchone())
+            dCount.addCallback(lambda x: self.assertEqual(5, x[0]))
+            return dCount
+
+        d.addCallback(check)
+        return d
