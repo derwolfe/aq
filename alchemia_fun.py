@@ -3,15 +3,18 @@ from __future__ import print_function, absolute_import, division
 from alchimia import TWISTED_STRATEGY
 
 from sqlalchemy import (
-    create_engine, MetaData, Table, Column, Integer, String
+    create_engine,
+    MetaData,
+    Table,
+    Column,
+    Integer,
+    String
 )
 from sqlalchemy.schema import CreateTable
 
-from twisted.internet import reactor, defer, stdio
-from twisted.internet.task import react
-
-from twisted.python.filepath import FilePath
+from twisted.internet import reactor, stdio
 from twisted.protocols import basic
+
 
 # db setup, how to make this readonly?
 connectionString = 'sqlite://'
@@ -22,22 +25,25 @@ metadata = MetaData()
 users = Table("users", metadata,
               Column("id", Integer(), primary_key=True),
               Column("name", String())
-)
+              )
+
+newUsers = [
+    dict(name="Jeremy Goodwin"),
+    dict(name="Natalie Hurley"),
+    dict(name="Dan Rydell"),
+    dict(name="Casey McCall"),
+    dict(name="Dana Whitaker")
+]
 
 
 class Database(object):
 
-    def setup(self):
+    def setup(self, newUsers=newUsers):
         d = engine.execute(CreateTable(users))
+
         def addUsers(_ignored):
-            newUsers = [
-                dict(name="Jeremy Goodwin"),
-                dict(name="Natalie Hurley"),
-                dict(name="Dan Rydell"),
-                dict(name="Casey McCall"),
-                dict(name="Dana Whitaker")
-            ]
             return engine.execute(users.insert().values(newUsers))
+
         d.addCallback(addUsers)
         return d
 
@@ -45,9 +51,7 @@ class Database(object):
         d = engine.execute(
             users.select(users.c.name.startswith(queryLetter))
         )
-        def realize(results):
-            return results.fetchall()
-        d.addCallback(realize)
+        d.addCallback(lambda x: x.fetchall())
         return d
 
     def addPerson(self, name):
@@ -58,8 +62,7 @@ class Database(object):
 
 class SearchCommandProtocol(basic.LineReceiver, object):
 
-    delimiter = '\n' # unix terminal style newlines. remove this line
-                     # for use with Telnet
+    delimiter = '\n'
 
     def __init__(self, database):
         self.database = database
@@ -69,7 +72,8 @@ class SearchCommandProtocol(basic.LineReceiver, object):
 
     def lineReceived(self, line):
         # Ignore blank lines
-        if not line: return
+        if not line:
+            return
 
         # Parse the command
         commandParts = line.split()
@@ -96,7 +100,7 @@ class SearchCommandProtocol(basic.LineReceiver, object):
             self.sendLine(getattr(self, 'do_' + command).__doc__)
         else:
             commands = [cmd[3:] for cmd in dir(self) if cmd.startswith('do_')]
-            self.sendLine("Valid commands: " +" ".join(commands))
+            self.sendLine("Valid commands: " + " ".join(commands))
 
     def do_quit(self):
         """
@@ -117,30 +121,28 @@ class SearchCommandProtocol(basic.LineReceiver, object):
         """
         add <name>: Add a new name to the system
         """
-        name = "%s %s" %(first, last)
+        name = "%s %s" % (first, last)
         self.database.addPerson(name.title()).addCallback(
             lambda _: self.do_find(name))
-
 
     def _checkSuccess(self, results):
         if not results:
             self.sendLine("No results")
         else:
             self._sendSeperator()
-            column = users.c.name
             for result in results:
-                formatted = "%d - %s" %(
+                formatted = "%d - %s" % (
                     result['id'],
                     result['name'].encode('utf-8')
                 )
                 self.sendLine(formatted)
             self._sendSeperator()
 
-    def _sendSeperator(self, bufferText="-"*10):
+    def _sendSeperator(self, bufferText="-" * 10):
         self.sendLine(bufferText)
 
     def _checkFailure(self, failure):
-         self.sendLine("Failure: " + failure.getErrorMessage())
+        self.sendLine("Failure: " + failure.getErrorMessage())
 
     def connectionLost(self, reason):
         # stop the reactor, only because this is meant to be run in Stdio.
