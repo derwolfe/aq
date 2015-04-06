@@ -7,7 +7,8 @@ from alchemia_fun import (
     connectionString,
     engine,
     metadata,
-    users
+    users,
+    newUsers
 )
 
 
@@ -21,11 +22,12 @@ class TestDatabase(unittest.TestCase):
         """
         setup creates a table named 'users'
         """
-        d = self.db.setup()
+        d = self.db.setup(newUsers)
 
         def check(_):
             result = engine.has_table('users')
             self.assertTrue(result)
+
         d.addCallback(check)
         return d
 
@@ -34,7 +36,7 @@ class TestDatabase(unittest.TestCase):
         """
         Users are added to the database.
         """
-        d = self.db.setup()
+        d = self.db.setup(newUsers)
 
         def check(_):
             dCount = engine.execute(users.count())
@@ -43,4 +45,22 @@ class TestDatabase(unittest.TestCase):
             return dCount
 
         d.addCallback(check)
+        return d
+
+
+    def test_getUsersStartedWithReturnsEmptyList(self):
+        """
+        getUsersStartedWith returns an empty list when no users
+        are present in the database
+        """
+        d = self.db.setup([])
+
+        def check(_):
+            return self.db.getUsersStartingWith("j")
+
+        def res(xs):
+            self.assertEqual([], xs)
+
+        d.addCallback(check)
+        d.addCallback(res)
         return d
