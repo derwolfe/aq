@@ -143,7 +143,7 @@ class FakeDatabase(object):
             return toReturn
 
         d.addCallback(find)
-        d.callback(names)
+        d.callback(letters)
 
         return d
 
@@ -171,9 +171,6 @@ class VerifyFakeDb(unittest.TestCase):
 
 
     def test_setupAddsNewUsers(self):
-        """
-        L{setup} adds a given set of users to the C{users} table.
-        """
         d = self.fakeDb.setup(newUsers)
 
         def check(_):
@@ -182,6 +179,46 @@ class VerifyFakeDb(unittest.TestCase):
         d.addCallback(check)
         return d
 
+
+    def test_getUsersStartedWithReturnsEmptyList(self):
+
+        d = self.fakeDb.setup([])
+
+        def check(_):
+            d1 = self.fakeDb.getUsersStartingWith("j")
+            d1.addCallback(lambda xs: self.assertEqual([], xs))
+            return d1
+
+        d.addCallback(check)
+        return d
+
+
+    def test_getUsersStartdWithReturnList(self):
+        name = u"don johnson"
+        d = self.fakeDb.setup([dict(name=name)])
+
+        def check(_):
+            d1 = self.fakeDb.getUsersStartingWith("d")
+            d1.addCallback(lambda xs: self.assertEqual(name, xs[0]["name"]))
+            return d1
+
+        d.addCallback(check)
+        return d
+
+
+    def test_addPersonCreatesRecord(self):
+        """
+        L{addPerson} adds a new user record to the database
+        """
+        name = u"maverick donvon"
+        d = self.fakeDb.setup([])
+
+        def add(_):
+            return self.fakeDb.addPerson(name)
+
+        d.addCallback(add)
+        d.addCallback(lambda x: self.assertEqual(name, x["name"]))
+        return d
 
 
 
