@@ -51,7 +51,7 @@ class TestDatabase(unittest.TestCase):
         return d
 
 
-    def test_getUsersStartedWithReturnsEmptyList(self):
+    def test_getUsersStartingWithReturnsEmptyList(self):
         """
         L{getUsersStartingWith} returns an empty list when no users
         are present in the database
@@ -67,7 +67,7 @@ class TestDatabase(unittest.TestCase):
         return d
 
 
-    def test_getUsersStartdWithReturnList(self):
+    def test_getUsersStartingWithReturnList(self):
         """
         L{getUsersStartingWith} returns a list of the users where the name the
         starts with the given query value.
@@ -138,7 +138,7 @@ class FakeDatabase(object):
         def find(_):
             toReturn = []
             for name in self.names:
-                if letters in name:
+                if letters in name['name']:
                     toReturn.append(name)
             return toReturn
 
@@ -166,7 +166,6 @@ class VerifyFakeDb(unittest.TestCase):
     """
 
     def setUp(self):
-        self.realDb = Database()
         self.fakeDb = FakeDatabase()
 
 
@@ -180,49 +179,31 @@ class VerifyFakeDb(unittest.TestCase):
         return d
 
 
-    def test_getUsersStartedWithReturnsEmptyList(self):
-
-        d = self.fakeDb.setup([])
-
-        def check(_):
-            d1 = self.fakeDb.getUsersStartingWith("j")
-            d1.addCallback(lambda xs: self.assertEqual([], xs))
-            return d1
-
-        d.addCallback(check)
+    def test_getUsersStartingWithReturnsEmptyList(self):
+        self.fakeDb.names = []
+        d = self.fakeDb.getUsersStartingWith("j")
+        d.addCallback(lambda xs: self.assertEqual([], xs))
         return d
 
 
-    def test_getUsersStartdWithReturnList(self):
+    def test_getUsersStartingWithReturnList(self):
         name = u"don johnson"
-        d = self.fakeDb.setup([dict(name=name)])
-
-        def check(_):
-            d1 = self.fakeDb.getUsersStartingWith("d")
-            d1.addCallback(lambda xs: self.assertEqual(name, xs[0]["name"]))
-            return d1
-
-        d.addCallback(check)
+        self.fakeDb.names = [{'id':1, 'name': name}]
+        d = self.fakeDb.getUsersStartingWith(u"d")
+        d.addCallback(lambda xs: self.assertEqual(name, xs[0]['name']))
         return d
 
 
     def test_addPersonCreatesRecord(self):
-        """
-        L{addPerson} adds a new user record to the database
-        """
         name = u"maverick donvon"
-        d = self.fakeDb.setup([])
-
-        def add(_):
-            return self.fakeDb.addPerson(name)
-
-        d.addCallback(add)
+        self.fakeDb.names = []
+        d = self.fakeDb.addPerson(name)
         d.addCallback(
-            lambda x: self.assertEqual(name, self.fakeDb.names[0]["name"]))
+            lambda x: self.assertEqual(name, self.fakeDb.names[0]['name']))
         return d
 
 
+# class SearchCommandProtocolTests(unittest.TestCase):
 
-#class SearchCommandProtocolTests(unittest.TestCase):
 #    def setUp(self):
-#        self.protocol = SearchCommandProtocol(
+#        self.protocol = SearchCommandProtocol(o)
