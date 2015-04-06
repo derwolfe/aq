@@ -50,7 +50,7 @@ class TestDatabase(unittest.TestCase):
 
     def test_getUsersStartedWithReturnsEmptyList(self):
         """
-        getUsersStartedWith returns an empty list when no users
+        getUsersStartingWith returns an empty list when no users
         are present in the database
         """
         d = self.db.setup([])
@@ -60,6 +60,24 @@ class TestDatabase(unittest.TestCase):
 
         def res(xs):
             self.assertEqual([], xs)
+
+        d.addCallback(check)
+        d.addCallback(res)
+        return d
+
+    def test_getUsersStartdWithReturnList(self):
+        """
+        getUsersStartingWith returns a list of the users where the name the
+        starts with the given query value.
+        """
+        name = u"don johnson"
+        d = self.db.setup([dict(name=name)])
+
+        def check(_):
+            return self.db.getUsersStartingWith("d")
+
+        def res(xs):
+            self.assertEqual(name, xs[0][1])
 
         d.addCallback(check)
         d.addCallback(res)
