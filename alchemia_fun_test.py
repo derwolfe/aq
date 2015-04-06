@@ -113,14 +113,19 @@ class FakeDatabase(object):
     """
 
     def __init__(self):
+        self.idNumber = 1
         self.names = []
+
+    def _makeRecord(self, name):
+        self.idNumber = id = self.idNumber + 1
+        return dict(id=self.idNumber, name=unicode(name))
 
     def setup(self, names):
         d = Deferred()
 
         def add(names):
             for name in names:
-                self.names.append(name)
+                self.names.append(self._makeRecord(name))
 
         d.addCallback(add)
         d.callback(names)
@@ -146,7 +151,7 @@ class FakeDatabase(object):
         d = Deferred()
 
         def add(name):
-            self.names.append(name)
+            self.names.append(self._makeRecord(name))
 
         d.addCallback(add)
         d.callback(name)
@@ -156,6 +161,26 @@ class FakeDatabase(object):
 verify.verifyObject(IDatabase, FakeDatabase())
 
 class VerifyFakeDb(unittest.TestCase):
+    """
+    The fake should have behaviour that mirrors the actual database
+    """
+
+    def setUp(self):
+        self.realDb = Database()
+        self.fakeDb = FakeDatabase()
+
+
+    def test_setupAddsNewUsers(self):
+        """
+        L{setup} adds a given set of users to the C{users} table.
+        """
+        d = self.fakeDb.setup(newUsers)
+
+        def check(_):
+            self.assertTrue(5, len(self.fakeDb.names))
+
+        d.addCallback(check)
+        return d
 
 
 
