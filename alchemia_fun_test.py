@@ -18,7 +18,7 @@ class TestDatabase(unittest.TestCase):
 
     def test_setupCreatesUsersTable(self):
         """
-        setup creates a table named 'users'
+        L{setup} creates a table named C{users}
         """
         d = self.db.setup(newUsers)
 
@@ -31,7 +31,7 @@ class TestDatabase(unittest.TestCase):
 
     def test_setupAddsNewUsers(self):
         """
-        Users are added to the database.
+        L{setup} adds a given set of users to the C{users} table.
         """
         d = self.db.setup(newUsers)
 
@@ -46,7 +46,7 @@ class TestDatabase(unittest.TestCase):
 
     def test_getUsersStartedWithReturnsEmptyList(self):
         """
-        getUsersStartingWith returns an empty list when no users
+        L{getUsersStartingWith} returns an empty list when no users
         are present in the database
         """
         d = self.db.setup([])
@@ -61,7 +61,7 @@ class TestDatabase(unittest.TestCase):
 
     def test_getUsersStartdWithReturnList(self):
         """
-        getUsersStartingWith returns a list of the users where the name the
+        L{getUsersStartingWith} returns a list of the users where the name the
         starts with the given query value.
         """
         name = u"don johnson"
@@ -77,7 +77,7 @@ class TestDatabase(unittest.TestCase):
 
     def test_addPersonCreatesRecord(self):
         """
-        `addPerson` adds a new user record to the database
+        L{addPerson} adds a new user record to the database
         """
         name = u"maverick donvon"
         d = self.db.setup([])
