@@ -1,6 +1,7 @@
 from __future__ import print_function, absolute_import, division
 
 from twisted.trial import unittest
+
 from alchemia_fun import (
     Database,
     SearchCommandProtocol,
@@ -15,7 +16,6 @@ class TestDatabase(unittest.TestCase):
     def setUp(self):
         self.db = Database()
 
-
     def test_setupCreatesUsersTable(self):
         """
         setup creates a table named 'users'
@@ -28,7 +28,6 @@ class TestDatabase(unittest.TestCase):
 
         d.addCallback(check)
         return d
-
 
     def test_setupAddsNewUsers(self):
         """
@@ -45,7 +44,6 @@ class TestDatabase(unittest.TestCase):
         d.addCallback(check)
         return d
 
-
     def test_getUsersStartedWithReturnsEmptyList(self):
         """
         getUsersStartingWith returns an empty list when no users
@@ -54,13 +52,11 @@ class TestDatabase(unittest.TestCase):
         d = self.db.setup([])
 
         def check(_):
-            return self.db.getUsersStartingWith("j")
-
-        def res(xs):
-            self.assertEqual([], xs)
+            d1 = self.db.getUsersStartingWith("j")
+            d1.addCallback(lambda xs: self.assertEqual([], xs))
+            return d1
 
         d.addCallback(check)
-        d.addCallback(res)
         return d
 
     def test_getUsersStartdWithReturnList(self):
@@ -83,7 +79,7 @@ class TestDatabase(unittest.TestCase):
         """
         `addPerson` adds a new user record to the database
         """
-        name = u"maverick donovon"
+        name = u"maverick donvon"
         d = self.db.setup([])
 
         def add(_):
