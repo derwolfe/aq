@@ -1,20 +1,12 @@
-from __future__ import print_function, absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 from alchimia import TWISTED_STRATEGY
 
-from sqlalchemy import (
-    create_engine,
-    MetaData,
-    Table,
-    Column,
-    Integer,
-    String
-)
+from sqlalchemy import Column, Integer, MetaData, String, Table, create_engine
 from sqlalchemy.schema import CreateTable
 
 from twisted.internet import reactor, stdio
 from twisted.protocols import basic
-
 
 # db setup, how to make this readonly?
 connectionString = 'sqlite://'
