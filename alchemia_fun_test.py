@@ -4,9 +4,7 @@ from twisted.trial import unittest
 from alchemia_fun import (
     Database,
     SearchCommandProtocol,
-    connectionString,
     engine,
-    metadata,
     users,
     newUsers
 )
@@ -74,11 +72,29 @@ class TestDatabase(unittest.TestCase):
         d = self.db.setup([dict(name=name)])
 
         def check(_):
-            return self.db.getUsersStartingWith("d")
-
-        def res(xs):
-            self.assertEqual(name, xs[0][1])
+            d1 = self.db.getUsersStartingWith("d")
+            d1.addCallback(lambda xs: self.assertEqual(name, xs[0]["name"]))
+            return d1
 
         d.addCallback(check)
-        d.addCallback(res)
+        return d
+
+    def test_addPersonCreatesRecord(self):
+        """
+        `addPerson` adds a new user record to the database
+        """
+        name = u"maverick donovon"
+        d = self.db.setup([])
+
+        def add(_):
+            return self.db.addPerson(name)
+
+        def check(xs):
+            d1 = engine.execute(users.select(users))
+            d1.addCallback(lambda x: x.fetchone())
+            d1.addCallback(lambda x: self.assertEqual(name, x["name"]))
+            return d1
+
+        d.addCallback(add)
+        d.addCallback(check)
         return d

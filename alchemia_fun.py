@@ -42,7 +42,8 @@ class Database(object):
         d = engine.execute(CreateTable(users))
 
         def addUsers(_ignored):
-            return engine.execute(users.insert().values(newUsers))
+            if newUsers:
+                return engine.execute(users.insert().values(newUsers))
 
         d.addCallback(addUsers)
         return d
