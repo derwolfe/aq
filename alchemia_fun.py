@@ -15,7 +15,7 @@ from sqlalchemy.schema import CreateTable
 from twisted.internet import reactor, stdio
 from twisted.protocols import basic
 
-from zope.interface import Interface, implementer
+from zope.interface import Interface, implementer, verify
 
 # db setup, how to make this readonly?
 connectionString = 'sqlite://'
@@ -41,9 +41,9 @@ class IDatabase(Interface):
 
     def setup(newUsers):
         """
-        Setup creates a the database table and seeds it with the L{newUsers}.
+        Setup creates a the database table and seeds it with the C{newUsers}.
 
-        @param newUsers: a list of dictionaries with a L{name} key.
+        @param newUsers: a list of dictionaries with a C{name} key.
 
         @return: a deferred object that fires once the table has been created
             and seeded with data.
@@ -60,9 +60,9 @@ class IDatabase(Interface):
             "id, u"name""
         """
 
-    def addPerson(name, plop):
+    def addPerson(name):
         """
-        Add a new person to the database with the given L{name}.
+        Add a new person to the database with the given C{name}.
 
         @param name: the new to use
         @type name: a string
@@ -183,6 +183,8 @@ class SearchCommandProtocol(basic.LineReceiver, object):
         # stop the reactor, only because this is meant to be run in Stdio.
         reactor.stop()
 
+
+verify.verifyObject(IDatabase, Database())
 
 if __name__ == "__main__":
     database = Database()

@@ -1,14 +1,18 @@
 from __future__ import absolute_import, division, print_function
 
 from twisted.trial import unittest
+from twisted.internet.defer import Deferred
 
 from alchemia_fun import (
     Database,
+    IDatabase,
     SearchCommandProtocol,
     engine,
     newUsers,
     users
 )
+
+from zope.interface import Interface, implementer, verify
 
 
 class TestDatabase(unittest.TestCase):
@@ -100,9 +104,60 @@ class TestDatabase(unittest.TestCase):
         d.addCallback(check)
         return d
 
-#@implementer(IDatabase)
-#class FakeDb(object):
-#    pass
+@implementer(IDatabase)
+class FakeDatabase(object):
+
+    """
+    This is a simple, in memory version of the database that returns
+    L{deferreds}.
+    """
+
+    def __init__(self):
+        self.names = []
+
+    def setup(self, names):
+        d = Deferred()
+
+        def add(names):
+            for name in names:
+                self.names.append(name)
+
+        d.addCallback(add)
+        d.callback(names)
+        return d
+
+
+    def getUsersStartingWith(self, letters):
+        d = Deferred()
+
+        def find(_):
+            toReturn = []
+            for name in self.names:
+                if letters in name:
+                    toReturn.append(name)
+            return toReturn
+
+        d.addCallback(find)
+        d.callback(names)
+
+        return d
+
+    def addPerson(self, name):
+        d = Deferred()
+
+        def add(name):
+            self.names.append(name)
+
+        d.addCallback(add)
+        d.callback(name)
+        return d
+
+
+verify.verifyObject(IDatabase, FakeDatabase())
+
+class VerifyFakeDb(unittest.TestCase):
+
+
 
 
 #class SearchCommandProtocolTests(unittest.TestCase):
