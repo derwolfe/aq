@@ -217,7 +217,8 @@ class VerifyFakeDb(unittest.TestCase):
             return self.fakeDb.addPerson(name)
 
         d.addCallback(add)
-        d.addCallback(lambda x: self.assertEqual(name, x["name"]))
+        d.addCallback(
+            lambda x: self.assertEqual(name, self.fakeDb.names[0]["name"]))
         return d
 
 
