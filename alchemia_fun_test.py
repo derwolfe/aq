@@ -16,6 +16,7 @@ class TestDatabase(unittest.TestCase):
     def setUp(self):
         self.db = Database()
 
+
     def test_setupCreatesUsersTable(self):
         """
         L{setup} creates a table named C{users}
@@ -28,6 +29,7 @@ class TestDatabase(unittest.TestCase):
 
         d.addCallback(check)
         return d
+
 
     def test_setupAddsNewUsers(self):
         """
@@ -44,6 +46,7 @@ class TestDatabase(unittest.TestCase):
         d.addCallback(check)
         return d
 
+
     def test_getUsersStartedWithReturnsEmptyList(self):
         """
         L{getUsersStartingWith} returns an empty list when no users
@@ -58,6 +61,7 @@ class TestDatabase(unittest.TestCase):
 
         d.addCallback(check)
         return d
+
 
     def test_getUsersStartdWithReturnList(self):
         """
@@ -74,6 +78,7 @@ class TestDatabase(unittest.TestCase):
 
         d.addCallback(check)
         return d
+
 
     def test_addPersonCreatesRecord(self):
         """
@@ -94,3 +99,12 @@ class TestDatabase(unittest.TestCase):
         d.addCallback(add)
         d.addCallback(check)
         return d
+
+#@implementer(IDatabase)
+#class FakeDb(object):
+#    pass
+
+
+#class SearchCommandProtocolTests(unittest.TestCase):
+#    def setUp(self):
+#        self.protocol = SearchCommandProtocol(

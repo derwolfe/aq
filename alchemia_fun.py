@@ -2,11 +2,20 @@ from __future__ import absolute_import, division, print_function
 
 from alchimia import TWISTED_STRATEGY
 
-from sqlalchemy import Column, Integer, MetaData, String, Table, create_engine
+from sqlalchemy import (
+    Column,
+    Integer,
+    MetaData,
+    String,
+    Table,
+    create_engine
+)
 from sqlalchemy.schema import CreateTable
 
 from twisted.internet import reactor, stdio
 from twisted.protocols import basic
+
+from zope.interface import Interface, implementer
 
 # db setup, how to make this readonly?
 connectionString = 'sqlite://'
@@ -28,6 +37,39 @@ newUsers = [
 ]
 
 
+class IDatabase(Interface):
+
+    def setup(newUsers):
+        """
+        Setup creates a the database table and seeds it with the L{newUsers}.
+
+        @param newUsers: a list of dictionaries with a L{name} key.
+
+        @return: a deferred object that fires once the table has been created
+            and seeded with data.
+        """
+
+    def getUsersStartingWith(letters):
+        """
+        Return users whose name starts with L{letters}
+
+        @param letters: the string to search
+        @type letters: a string
+
+        @return: a list of results containing the database rows. In the format:
+            "id, u"name""
+        """
+
+    def addPerson(name, plop):
+        """
+        Add a new person to the database with the given L{name}.
+
+        @param name: the new to use
+        @type name: a string
+        """
+
+
+@implementer(IDatabase)
 class Database(object):
 
     def setup(self, newUsers=newUsers):
