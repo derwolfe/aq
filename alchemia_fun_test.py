@@ -24,7 +24,7 @@ class TestDatabase(unittest.TestCase):
 
     def test_setupCreatesUsersTable(self):
         """
-        L{setup} creates a table named C{users}
+        L{alchemia_fun.setup} creates a table named C{users}
         """
         d = self.db.setup(newUsers)
 
@@ -38,7 +38,7 @@ class TestDatabase(unittest.TestCase):
 
     def test_setupAddsNewUsers(self):
         """
-        L{setup} adds a given set of users to the C{users} table.
+        L{alchemia_fun.setup} adds a given set of users to the C{users} table.
         """
         d = self.db.setup(newUsers)
 
@@ -54,7 +54,7 @@ class TestDatabase(unittest.TestCase):
 
     def test_getUsersStartingWithReturnsEmptyList(self):
         """
-        L{getUsersStartingWith} returns an empty list when no users
+        L{alchemia_fun.getUsersStartingWith} returns an empty list when no users
         are present in the database
         """
         d = self.db.setup([])
@@ -70,7 +70,7 @@ class TestDatabase(unittest.TestCase):
 
     def test_getUsersStartingWithReturnList(self):
         """
-        L{getUsersStartingWith} returns a list of the users where the name the
+        L{alchemia_fun.getUsersStartingWith} returns a list of the users where the name the
         starts with the given query value.
         """
         name = u"don johnson"
@@ -87,7 +87,7 @@ class TestDatabase(unittest.TestCase):
 
     def test_addPersonCreatesRecord(self):
         """
-        L{addPerson} adds a new user record to the database
+        L{alchemia_fun.addPerson} adds a new user record to the database
         """
         name = u"maverick donvon"
         d = self.db.setup([])
@@ -109,8 +109,8 @@ class TestDatabase(unittest.TestCase):
 class FakeDatabase(object):
 
     """
-    This is a simple, in memory version of the database that returns
-    L{deferreds}.
+    An in-memory version of the database that returns
+    L{twisted.internet.defer.Deferred}s.
     """
 
     def __init__(self):
