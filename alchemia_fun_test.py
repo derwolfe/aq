@@ -224,8 +224,8 @@ class SearchCommandProtocolTests(unittest.TestCase):
 
     def test_lineReceivedBareHelp(self):
         """
-        When help is called without arguments, it returns the
-        commands available to the user.
+        When help is called without arguments, it returns the commands available
+        to the user.
         """
         self.protocol.lineReceived('help\n')
         self.assertIn(
@@ -235,8 +235,32 @@ class SearchCommandProtocolTests(unittest.TestCase):
 
 
     def test_doHelpReturns(self):
+        """
+        L{alchemia_fun.lineRecieived} returns the list of valid commands
+        when ``help`` is received.
+        """
         self.protocol.lineReceived('help\n')
         self.assertEqual(
             "Valid commands: add find help quit\n",
             self.transport.value()
         )
+
+
+    # test that all of the of help commands actually return their docstring
+    def _test_returnsDocstring(self, command):
+        commandLine = command.__name__ + '\n'
+        commandToExecute = 'help ' + commandLine[3:] + '\n'
+        self.protocol.lineReceived(commandToExecute)
+        self.assertIn(command.__doc__, self.transport.value())
+
+    def test_doHelpAdd(self):
+        self._test_returnsDocstring(self.protocol.do_add)
+
+    def test_doHelpFind(self):
+        self._test_returnsDocstring(self.protocol.do_find)
+
+    def test_doHelpHelp(self):
+        self._test_returnsDocstring(self.protocol.do_help)
+
+    def test_doHelpQuit(self):
+        self._test_returnsDocstring(self.protocol.do_quit)
