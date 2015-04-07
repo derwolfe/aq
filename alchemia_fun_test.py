@@ -70,8 +70,8 @@ class TestDatabase(unittest.TestCase):
 
     def test_getUsersStartingWithReturnList(self):
         """
-        L{alchemia_fun.getUsersStartingWith} returns a list of the users where the name the
-        starts with the given query value.
+        L{alchemia_fun.getUsersStartingWith} returns a list of the users where
+        the name the starts with the given query value.
         """
         name = u"don johnson"
         d = self.db.setup([dict(name=name)])
@@ -246,20 +246,49 @@ class SearchCommandProtocolTests(unittest.TestCase):
         )
 
 
-    # test that all of the of help commands actually return their docstring
     def _test_returnsDocstring(self, command):
+        """
+        This is meant to be used a convenience method for testing the help
+        function. This function asserts that the response from the help
+        command is the docstring attached to the function whose help is
+        being requested.
+        """
         commandToExecute = 'help ' + command.__name__[3:] + '\n'
         self.protocol.lineReceived(commandToExecute)
         self.assertIn(command.__doc__, self.transport.value())
 
+
     def test_doHelpAdd(self):
+        """
+        L{alchemia_fun.SearchCommandProtocol.lineReceieved} returns the
+        docstring attached to the
+        L{alchemia_fun.SearchCommandProtocol.do_add}
+        """
         self._test_returnsDocstring(self.protocol.do_add)
 
+
     def test_doHelpFind(self):
+        """
+        L{alchemia_fun.SearchCommandProtocol.lineReceieved} returns the
+        docstring attached to the
+        L{alchemia_fun.SearchCommandProtocol.do_find}
+        """
         self._test_returnsDocstring(self.protocol.do_find)
 
+
     def test_doHelpHelp(self):
+        """
+        L{alchemia_fun.SearchCommandProtocol.lineReceieved} returns the
+        docstring attached to the
+        L{alchemia_fun.SearchCommandProtocol.do_help}
+        """
         self._test_returnsDocstring(self.protocol.do_help)
 
+
     def test_doHelpQuit(self):
+        """
+        L{alchemia_fun.SearchCommandProtocol.lineReceieved} returns the
+        docstring attached to the
+        L{alchemia_fun.SearchCommandProtocol.do_quit}
+        """
         self._test_returnsDocstring(self.protocol.do_quit)
