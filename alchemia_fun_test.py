@@ -248,8 +248,7 @@ class SearchCommandProtocolTests(unittest.TestCase):
 
     # test that all of the of help commands actually return their docstring
     def _test_returnsDocstring(self, command):
-        commandLine = command.__name__ + '\n'
-        commandToExecute = 'help ' + commandLine[3:] + '\n'
+        commandToExecute = 'help ' + command.__name__[3:] + '\n'
         self.protocol.lineReceived(commandToExecute)
         self.assertIn(command.__doc__, self.transport.value())
 
