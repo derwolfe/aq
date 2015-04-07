@@ -1,7 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
-from twisted.trial import unittest
 from twisted.internet.defer import Deferred
+from twisted.trial import unittest
+from twisted.test import proto_helpers
 
 from alchemia_fun import (
     Database,
@@ -203,7 +204,39 @@ class VerifyFakeDb(unittest.TestCase):
         return d
 
 
-# class SearchCommandProtocolTests(unittest.TestCase):
+class SearchCommandProtocolTests(unittest.TestCase):
 
-#    def setUp(self):
-#        self.protocol = SearchCommandProtocol(o)
+
+    def setUp(self):
+        self.db = FakeDatabase()
+        self.protocol = SearchCommandProtocol(self.db)
+        self.transport = proto_helpers.StringTransport()
+        self.protocol.transport = self.transport
+
+
+    def test_connectionMade(self):
+        self.protocol.connectionMade()
+        self.assertIn(
+            "DB query system. Type 'help' for help.",
+            self.transport.value()
+        )
+
+
+    def test_lineReceivedBareHelp(self):
+        """
+        When help is called without arguments, it returns the
+        commands available to the user.
+        """
+        self.protocol.lineReceived('help\n')
+        self.assertIn(
+            "Valid commands: add find help quit",
+            self.transport.value()
+        )
+
+
+    def test_doHelpReturns(self):
+        self.protocol.lineReceived('help\n')
+        self.assertEqual(
+            "Valid commands: add find help quit\n",
+            self.transport.value()
+        )

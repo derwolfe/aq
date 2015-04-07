@@ -17,7 +17,7 @@ from twisted.protocols import basic
 
 from zope.interface import Interface, implementer, verify
 
-# db setup, how to make this readonly?
+
 connectionString = 'sqlite://'
 engine = create_engine(
     connectionString, reactor=reactor, strategy=TWISTED_STRATEGY
@@ -93,6 +93,8 @@ class Database(object):
         return engine.execute(
             users.insert().values(dict(name=name))
         )
+
+verify.verifyObject(IDatabase, Database())
 
 
 class SearchCommandProtocol(basic.LineReceiver, object):
@@ -183,8 +185,6 @@ class SearchCommandProtocol(basic.LineReceiver, object):
         # stop the reactor, only because this is meant to be run in Stdio.
         reactor.stop()
 
-
-verify.verifyObject(IDatabase, Database())
 
 if __name__ == "__main__":
     database = Database()
