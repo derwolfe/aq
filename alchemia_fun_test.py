@@ -139,7 +139,7 @@ class FakeDatabase(object):
         def find(_):
             toReturn = []
             for name in self.names:
-                if letters in name['name']:
+                if letters in name['name'].lower():
                     toReturn.append(name)
             return toReturn
 
@@ -310,3 +310,31 @@ class SearchCommandProtocolTests(unittest.TestCase):
         """
         self.protocol.lineReceived(" .... 23   \n")
         self.assertEqual("Error: no such command.\n", self.transport.value())
+
+    def test_doQuitSendsGoodbye(self):
+        self.protocol.do_quit()
+        self.assertIn("Goodbye.", self.transport.value())
+
+    def test_doQuitKillsReactor(self):
+        self.protocol.do_quit()
+        self.fail()
+
+    # db tests
+    def test_doAddAddsPerson(self):
+        name = u"don johnson"
+        first, last = name.split(' ')
+        self.assertEqual([], self.db.names)
+        self.protocol.do_add(first, last)
+        self.assertIn(name.title(), self.transport.value())
+        self.assertEqual(1, len(self.db.names))
+
+    def test_doFindFindsPerson(self):
+        name = u"don johnson"
+        first, last = name.split(' ')
+        self.db.names = [self.db._makeRecord(name)]
+
+        self.protocol.do_find('d')
+        self.assertIn(name, self.transport.value())
+
+        self.protocol.do_find('don johnson')
+        self.assertIn(name, self.transport.value())

@@ -134,7 +134,7 @@ class SearchCommandProtocol(basic.LineReceiver, object):
 
     def do_help(self, command=None):
         """
-        help [command]: List commands, or show help on the given command
+        help <command>: List commands, or show help on the given command
         """
         if command:
             self.sendLine(getattr(self, 'do_' + command).__doc__)
