@@ -114,6 +114,9 @@ class SearchCommandProtocol(basic.LineReceiver, object):
 
         # Parse the command
         commandParts = line.split()
+        if len(commandParts) == 0:
+            return
+
         command = commandParts[0].lower()
         args = commandParts[1:]
 
