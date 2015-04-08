@@ -338,3 +338,9 @@ class SearchCommandProtocolTests(unittest.TestCase):
 
         self.protocol.do_find('don johnson')
         self.assertIn(name, self.transport.value())
+
+    def test_doFindResults(self):
+        name = u"don johnson"
+        first, last = name.split(' ')
+        self.protocol.do_find('d')
+        self.assertIn("No results", self.transport.value())
