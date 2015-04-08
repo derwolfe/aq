@@ -178,11 +178,11 @@ class SearchCommandProtocol(basic.LineReceiver, object):
                 self.sendLine(formatted)
             self._sendSeperator()
 
-    def _sendSeperator(self, bufferText="-" * 10):
-        self.sendLine(bufferText)
-
     def _checkFailure(self, failure):
         self.sendLine("Failure: " + failure.getErrorMessage())
+
+    def _sendSeperator(self, bufferText="-" * 10):
+        self.sendLine(bufferText)
 
     def connectionLost(self, reason):
         # stop the reactor, only because this is meant to be run in Stdio.

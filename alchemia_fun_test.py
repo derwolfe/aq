@@ -292,3 +292,21 @@ class SearchCommandProtocolTests(unittest.TestCase):
         L{alchemia_fun.SearchCommandProtocol.do_quit}
         """
         self._test_returnsDocstring(self.protocol.do_quit)
+
+    def test_lineReceivedIgnoreBlank(self):
+        self.protocol.lineReceived("")
+        self.assertEqual("", self.transport.value())
+
+        self.protocol.lineReceived("\n")
+        self.assertEqual("", self.transport.value())
+
+        self.protocol.lineReceived("       \n")
+        self.assertEqual("", self.transport.value())
+
+    def test_lineReceivedBadInput(self):
+        """
+        On bad input, L{alchemia_fun.SearchCommandProtocol.lineReceived} returns
+        an error message
+        """
+        self.protocol.lineReceived(" .... 23   \n")
+        self.assertEqual("Error: no such command.\n", self.transport.value())
