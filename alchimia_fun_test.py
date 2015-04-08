@@ -4,7 +4,7 @@ from twisted.internet.defer import Deferred
 from twisted.trial import unittest
 from twisted.test import proto_helpers
 
-from alchemia_fun import (
+from alchimia_fun import (
     Database,
     IDatabase,
     SearchCommandProtocol,
@@ -24,7 +24,7 @@ class TestDatabase(unittest.TestCase):
 
     def test_setupCreatesUsersTable(self):
         """
-        L{alchemia_fun.setup} creates a table named C{users}
+        L{alchimia_fun.setup} creates a table named C{users}
         """
         d = self.db.setup(newUsers)
 
@@ -38,7 +38,7 @@ class TestDatabase(unittest.TestCase):
 
     def test_setupAddsNewUsers(self):
         """
-        L{alchemia_fun.setup} adds a given set of users to the C{users} table.
+        L{alchimia_fun.setup} adds a given set of users to the C{users} table.
         """
         d = self.db.setup(newUsers)
 
@@ -54,7 +54,7 @@ class TestDatabase(unittest.TestCase):
 
     def test_getUsersStartingWithReturnsEmptyList(self):
         """
-        L{alchemia_fun.getUsersStartingWith} returns an empty list when no users
+        L{alchimia_fun.getUsersStartingWith} returns an empty list when no users
         are present in the database
         """
         d = self.db.setup([])
@@ -70,7 +70,7 @@ class TestDatabase(unittest.TestCase):
 
     def test_getUsersStartingWithReturnList(self):
         """
-        L{alchemia_fun.getUsersStartingWith} returns a list of the users where
+        L{alchimia_fun.getUsersStartingWith} returns a list of the users where
         the name the starts with the given query value.
         """
         name = u"don johnson"
@@ -87,7 +87,7 @@ class TestDatabase(unittest.TestCase):
 
     def test_addPersonCreatesRecord(self):
         """
-        L{alchemia_fun.addPerson} adds a new user record to the database
+        L{alchimia_fun.addPerson} adds a new user record to the database
         """
         name = u"maverick donvon"
         d = self.db.setup([])
@@ -236,7 +236,7 @@ class SearchCommandProtocolTests(unittest.TestCase):
 
     def test_doHelpReturns(self):
         """
-        L{alchemia_fun.lineRecieived} returns the list of valid commands
+        L{alchimia_fun.lineRecieived} returns the list of valid commands
         when ``help`` is received.
         """
         self.protocol.lineReceived('help\n')
@@ -260,36 +260,36 @@ class SearchCommandProtocolTests(unittest.TestCase):
 
     def test_doHelpAdd(self):
         """
-        L{alchemia_fun.SearchCommandProtocol.lineReceieved} returns the
+        L{alchimia_fun.SearchCommandProtocol.lineReceieved} returns the
         docstring attached to the
-        L{alchemia_fun.SearchCommandProtocol.do_add}
+        L{alchimia_fun.SearchCommandProtocol.do_add}
         """
         self._test_returnsDocstring(self.protocol.do_add)
 
 
     def test_doHelpFind(self):
         """
-        L{alchemia_fun.SearchCommandProtocol.lineReceieved} returns the
+        L{alchimia_fun.SearchCommandProtocol.lineReceieved} returns the
         docstring attached to the
-        L{alchemia_fun.SearchCommandProtocol.do_find}
+        L{alchimia_fun.SearchCommandProtocol.do_find}
         """
         self._test_returnsDocstring(self.protocol.do_find)
 
 
     def test_doHelpHelp(self):
         """
-        L{alchemia_fun.SearchCommandProtocol.lineReceieved} returns the
+        L{alchimia_fun.SearchCommandProtocol.lineReceieved} returns the
         docstring attached to the
-        L{alchemia_fun.SearchCommandProtocol.do_help}
+        L{alchimia_fun.SearchCommandProtocol.do_help}
         """
         self._test_returnsDocstring(self.protocol.do_help)
 
 
     def test_doHelpQuit(self):
         """
-        L{alchemia_fun.SearchCommandProtocol.lineReceieved} returns the
+        L{alchimia_fun.SearchCommandProtocol.lineReceieved} returns the
         docstring attached to the
-        L{alchemia_fun.SearchCommandProtocol.do_quit}
+        L{alchimia_fun.SearchCommandProtocol.do_quit}
         """
         self._test_returnsDocstring(self.protocol.do_quit)
 
@@ -305,7 +305,7 @@ class SearchCommandProtocolTests(unittest.TestCase):
 
     def test_lineReceivedBadInput(self):
         """
-        On bad input, L{alchemia_fun.SearchCommandProtocol.lineReceived} returns
+        On bad input, L{alchimia_fun.SearchCommandProtocol.lineReceived} returns
         an error message
         """
         self.protocol.lineReceived(" .... 23   \n")
